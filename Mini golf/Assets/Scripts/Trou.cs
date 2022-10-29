@@ -8,11 +8,12 @@ public class Trou : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.CompareTag("Balle"))
-        {
-            other.transform.position = positionProchainNiveau;
-            other.GetComponent<Rigidbody>().velocity = Vector3.zero;
-            other.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+        if (other.CompareTag("Balle")) {
+            if (positionProchainNiveau == Vector3.zero) {
+                Evenements.instance.PartieTerminee();
+            } else {
+                Evenements.instance.ChangementDeNiveau(positionProchainNiveau);
+            }
         }
     }
 }

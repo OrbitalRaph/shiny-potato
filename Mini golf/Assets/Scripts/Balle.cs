@@ -6,13 +6,16 @@ using UnityEngine.UI;
 
 public class Balle : MonoBehaviour
 {
-    public float forceMax;
-    public float forceMin;
-    public float vitesseChangementAngle;
-    public float vitesseChangementForce;
+    [SerializeField] private float forceMax;
+    [SerializeField] private float forceMin;
+    [SerializeField] private float vitesseChangementAngle;
+    [SerializeField] private float vitesseChangementForce;
+
+    [SerializeField] private float tempsReapparition = 3f;
+    
     public Slider sliderForce;
     public TextMeshProUGUI textNbCoups;
-
+    public EcranFinal ecranFinal;
     private Rigidbody balle;
     private LineRenderer ligne;
     private float angle;
@@ -20,22 +23,30 @@ public class Balle : MonoBehaviour
     private int nbCoups;
     private Vector3 dernierePosition;
 
+
     private void Awake()
     {
         balle = GetComponent<Rigidbody>();
-        balle.maxAngularVelocity = 1500;
-
         ligne = GetComponent<LineRenderer>();
-
+        angle = transform.eulerAngles.y;
         force = forceMin;
+        nbCoups = 0;
+        dernierePosition = transform.position;
+        balle.maxAngularVelocity = 1500;
         sliderForce.value = force / forceMax;
+    }
+
+    private void Start()
+    {
+        Evenements.instance.OnChangementDeNiveau += Reapparition;
+        Evenements.instance.OnPartieTerminee += PartieTerminee;
     }
 
     private void Update()
     {
-
         if (balle.velocity.magnitude < 0.05f)
         {
+
             if (Input.GetKey(KeyCode.A))
             {
                 ChangerAngle(-1);
@@ -67,8 +78,6 @@ public class Balle : MonoBehaviour
         {
             transform.RotateAround(transform.position, Vector3.up, Input.GetAxis("Mouse X") * 5);
         }
-
-        transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
     }
 
     private void ChangerAngle(int direction)
@@ -89,6 +98,8 @@ public class Balle : MonoBehaviour
     {
         dernierePosition = transform.position;
 
+        GetComponent<AudioSource>().Play();
+
         // Lancer la balle dans la direction de la ligne avec la force choisie horizontallement
         balle.AddForce(Quaternion.Euler(0, angle, 0) * Vector3.forward * force, ForceMode.Impulse);
 
@@ -108,17 +119,54 @@ public class Balle : MonoBehaviour
         ligne.SetPosition(1, transform.position + Quaternion.Euler(0, angle, 0) * Vector3.forward * (force / forceMax));
     }
 
-    private void OnTriggerStay(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         // detecte si la balle tombe dans l'eau et la remet au point précédent
         if (other.CompareTag("Eau"))
         {
-            Debug.Log("Balle dans l'eau");
-            transform.position = dernierePosition;
-            balle.velocity = Vector3.zero;
-            balle.angularVelocity = Vector3.zero;
+            other.GetComponent<AudioSource>().Play();
+            balle.GetComponent<TrailRenderer>().enabled = false;
+            balle.GetComponent<ParticleSystem>().Play();
+            Stop();
+            
+            StartCoroutine(DelaisReapparition());
         }
     }
 
-    
+    public IEnumerator DelaisReapparition()
+    {
+        float tempsEcoule = 0f;
+        while(tempsEcoule < tempsReapparition)
+        {
+            tempsEcoule += Time.deltaTime;
+            yield return null;
+        }
+
+        Reapparition();
+    }
+
+    public void Reapparition(Vector3 position = default)
+    {
+        Stop();
+        transform.position = position == default ? dernierePosition : position;
+        balle.GetComponent<TrailRenderer>().enabled = true;
+    }
+
+    public void PartieTerminee()
+    {
+        ecranFinal.PartieTerminee(nbCoups);
+    }
+
+    private void Stop()
+    {
+        balle.velocity = Vector3.zero;
+        balle.angularVelocity = Vector3.zero;
+    }
+
+    private void OnDestroy()
+    {
+        Evenements.instance.OnChangementDeNiveau -= Reapparition;
+        Evenements.instance.OnPartieTerminee -= PartieTerminee;
+    }
+
 }
