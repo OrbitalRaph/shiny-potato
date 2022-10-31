@@ -6,22 +6,26 @@ using UnityEngine.UI;
 
 public class Balle : MonoBehaviour
 {
+    [Header("Paramètres")]
     [SerializeField] private float forceMax;
     [SerializeField] private float forceMin;
     [SerializeField] private float vitesseChangementAngle;
     [SerializeField] private float vitesseChangementForce;
 
-    [SerializeField] private float tempsReapparition = 3f;
+    [SerializeField] private float tempsReapparition;
     
+    [Header("UI")]
     public Slider sliderForce;
     public TextMeshProUGUI textNbCoups;
     public EcranFinal ecranFinal;
+
+    [Header("Autres")]
     private Rigidbody balle;
     private LineRenderer ligne;
+    private Vector3 dernierePosition;
     private float angle;
     private float force;
     private int nbCoups;
-    private Vector3 dernierePosition;
 
 
     private void Awake()
@@ -135,12 +139,7 @@ public class Balle : MonoBehaviour
 
     public IEnumerator DelaisReapparition()
     {
-        float tempsEcoule = 0f;
-        while(tempsEcoule < tempsReapparition)
-        {
-            tempsEcoule += Time.deltaTime;
-            yield return null;
-        }
+        yield return new WaitForSeconds(tempsReapparition);
 
         Reapparition();
     }
