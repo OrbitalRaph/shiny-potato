@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class Roches : MonoBehaviour
 {
-    // Spawn des rochers dans la scène
-    // GameObject array
     public GameObject[] rochers;
 
     public int nbRochers;
@@ -13,6 +11,7 @@ public class Roches : MonoBehaviour
     
     private void Awake()
     {
+        // On crée un nombre donné de rochers aléatoire dans un rayon donné dans la scène à l'initialisation
         for (int i = 0; i < nbRochers; i++)
         {
             Vector3 position = new Vector3(transform.position.x + Random.Range(-rayonSpawn, rayonSpawn), transform.position.y, transform.position.z + Random.Range(-rayonSpawn, rayonSpawn));

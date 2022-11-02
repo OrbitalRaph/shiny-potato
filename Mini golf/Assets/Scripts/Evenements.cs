@@ -9,6 +9,8 @@ public class Evenements : MonoBehaviour
 
     public event Action<Vector3> OnChangementDeNiveau;
     public event Action OnPartieTerminee;
+    public event Action OnLancerBalle;
+    public event Action<float> OnChangementForce;
 
     private void Awake()
     {
@@ -28,5 +30,15 @@ public class Evenements : MonoBehaviour
     public void PartieTerminee()
     {
         OnPartieTerminee?.Invoke();
+    }
+
+    public void LancerBalle()
+    {
+        OnLancerBalle?.Invoke();
+    }
+
+    public void ChangementForce(float pourcentageForce)
+    {
+        OnChangementForce?.Invoke(pourcentageForce);
     }
 }
